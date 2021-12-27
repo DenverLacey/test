@@ -14,6 +14,16 @@
 
 namespace test {
 
+namespace color {
+
+constexpr const char *RESET  = "\e[0m";
+constexpr const char *RED    = "\e[31m";
+constexpr const char *GREEN  = "\e[32m";
+constexpr const char *YELLOW = "\e[33m";
+constexpr const char *CYAN   = "\e[36m";
+
+} // namespace color
+
 enum Status {
   PASSED,
   INCONCLUSIVE,
@@ -37,7 +47,7 @@ public:
     }
 
     set_status(FAILED);
-    _report << "\t\e[31mExpected `true`.\e[0m" << std::endl;
+    _report << color::RED << "\tExpected `true`." << color::RESET << std::endl;
 
     return false;
   }
@@ -48,7 +58,7 @@ public:
     }
 
     set_status(FAILED);
-    _report << "\t\e[31mExpected `false`.\e[0m" << std::endl;
+    _report << color::RED << "\tExpected `false`." << color::RESET << std::endl;
     
     return false;
   }
@@ -59,7 +69,7 @@ public:
     }
 
     set_status(FAILED);
-    _report << "\t\e[31mExpected `nullptr` but Actual = " << ptr << ".\e[0m" << std::endl;
+    _report << color::RED << "\tExpected `nullptr` but Actual = " << ptr << '.' << color::RESET << std::endl;
 
     return false;
   }
@@ -70,7 +80,7 @@ public:
     }
 
     set_status(FAILED);
-    _report << "\t\e[31mUnexpected `nullptr`.\e[0m" << std::endl;
+    _report << color::RED << "\tUnexpected `nullptr`." << color::RESET << std::endl;
 
     return false;
   }
@@ -82,7 +92,7 @@ public:
     }
     
     set_status(FAILED);
-    _report << "\t\e[31mFailed equality!\e[0m Expected = " << expected << ", Actual = " << actual << '.' << std::endl;
+    _report << color::RED << "\tFailed equality!" << color::RESET << " Expected = " << expected << ", Actual = " << actual << '.' << std::endl;
 
     return false;
   }
@@ -94,7 +104,7 @@ public:
     }
 
     set_status(FAILED);
-    _report << "\t\e[31mFailed non-equality!\e[0m Actual value (" << actual << ") was invalid value (" << invalid << ")." << std::endl;
+    _report << color::RED << "\tFailed non-equality!" << color::RESET << " Actual value (" << actual << ") was invalid value (" << invalid << ")." << std::endl;
 
     return false;
   }
@@ -106,7 +116,7 @@ public:
     }
 
     set_status(FAILED);
-    _report << "\t\e[31mFailed less-than test!\e[0m a = " << a << ", b = " << b << '.' << std::endl;
+    _report << color::RED << "\tFailed less-than test!" << color::RESET << " a = " << a << ", b = " << b << '.' << std::endl;
 
     return false;
   }
@@ -118,7 +128,7 @@ public:
     }
 
     set_status(FAILED);
-    _report << "\t\e[31mFailed less-equal test!\e[0m a = " << a << ", b = " << b << '.' << std::endl;
+    _report << color::RED << "\tFailed less-equal test!" << color::RESET << " a = " << a << ", b = " << b << '.' << std::endl;
 
     return false;
   }
@@ -130,7 +140,7 @@ public:
     }
 
     set_status(FAILED);
-    _report << "\t\e[31mFailed greater-than test!\e[0m a = " << a << ", b = " << b << '.' << std::endl;
+    _report << color::RED << "\tFailed greater-than test!" << color::RESET << " a = " << a << ", b = " << b << '.' << std::endl;
 
     return false;
   }
@@ -142,7 +152,7 @@ public:
     }
 
     set_status(FAILED);
-    _report << "\t\e[31mFailed greater-equal test!\e[0m a = " << a << ", b = " << b << '.' << std::endl;
+    _report << color::RED << "\tFailed greater-equal test!" << color::RESET << " a = " << a << ", b = " << b << '.' << std::endl;
 
     return false;
   }
@@ -159,7 +169,7 @@ public:
     vasprintf(&message, fmt, args);
 
     set_status(FAILED);
-    _report << "\t\e[31m" << message << "\e[0m" << std::endl;
+    _report << color::RED << '\t' << message << color::RESET << std::endl;
 
     va_end(args);
     free(message);
@@ -177,7 +187,7 @@ public:
     vasprintf(&message, fmt, args);
 
     set_status(INCONCLUSIVE);
-    _report << "\t\e[33m" << message << "\e[0m" << std::endl;
+    _report << color::YELLOW << '\t' << message << color::RESET << std::endl;
 
     va_end(args);
     free(message);
@@ -200,13 +210,13 @@ public:
 
     switch (_status) {
       case PASSED:
-        std::cout << "\e[32mOk!\e[0m" << std::endl;
+        std::cout << color::GREEN << "Ok!" << color::RESET << std::endl;
         break;
       case INCONCLUSIVE:
-        std::cout << "\e[33mInconclusive!\e[0m" << std::endl;
+        std::cout << color::YELLOW << "Inconclusive!" << color::RESET << std::endl;
         break;
       case FAILED:
-        std::cout << "\e[31mFailed!\e[0m" << std::endl;
+        std::cout << color::RED << "Failed!" << color::RESET << std::endl;
         break;
 
       default:
@@ -249,7 +259,7 @@ int run_fixture_for() {
   if (name == nullptr || demangle_status != 0) {
     return 0;
   } else {
-    std::cout << "\e[36mRunning " << name << "'s tests\e[0m:" << std::endl;
+    std::cout << color::CYAN << "Running " << name << "'s tests" << color::RESET << ':' << std::endl;
     free((void *)name);
   }
 
@@ -282,8 +292,8 @@ void run_tests() {
   num_tests += (Fixture<Ts>::__tests__.size() + ... + 0);
   passed_tests += (run_fixture_for<Ts>() + ... + 0);
 
-  auto color = passed_tests == num_tests ? "\e[32m" : "\e[31m";
-  std::cout << color << passed_tests << '/' << num_tests << " tests passed!\e[0m" << std::endl << std::endl;
+  auto color = passed_tests == num_tests ? color::GREEN : color::RED;
+  std::cout << color << passed_tests << '/' << num_tests << " tests passed!" << color::RESET << std::endl << std::endl;
 }
 
 } // namespace test
