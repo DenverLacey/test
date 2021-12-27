@@ -9,8 +9,8 @@
 #include <typeinfo>
 
 #define REGISTER_TESTS static constexpr std::initializer_list<Test> __tests__ = 
-#define REGISTER_TEST(test) { SHOULD_PASS, test, #test }
-#define REGISTER_TEST_EXPECT(expectation, test) { expectation, test, #test }
+#define REGISTER_TEST(test) { SHOULD_PASS, test, #test, __FILE__, __LINE__ }
+#define REGISTER_TEST_EXPECT(expectation, test) { expectation, test, #test, __FILE__, __LINE__ }
 
 namespace test {
 
@@ -205,8 +205,8 @@ public:
     }
   }
 
-  void report(const char *test_name) const {
-    std::cout << test_name << "... ";
+  void report(const char *test_name, const char *test_file, int test_line) const {
+    std::cout << test_file << ':' << test_line << ": " << test_name << "... ";
 
     switch (_status) {
       case PASSED:
@@ -248,6 +248,8 @@ struct Test {
   Expectation expectation;
   void (*fn)(Tester&);
   const char *name;
+  const char *file;
+  int line;
 };
 
 template<typename T>
@@ -270,7 +272,7 @@ int run_fixture_for() {
     tester.reset();
 
     test.fn(tester);
-    tester.report(test.name);
+    tester.report(test.name, test.file, test.line);
 
     if (tester.expectation_met(test.expectation)) {
       passed_tests++;
