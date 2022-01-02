@@ -193,7 +193,7 @@ public:
     free(message);
   }
 
-  bool expectation_met(Expectation e) {
+  bool meets_expectation(Expectation e) {
     switch (e) {
       case SHOULD_PASS: return _status == PASSED;
       case SHOULD_FAIL: return _status == FAILED;
@@ -274,7 +274,7 @@ int run_fixture_for() {
     test.fn(tester);
     tester.report(test.name, test.file, test.line);
 
-    if (tester.expectation_met(test.expectation)) {
+    if (tester.meets_expectation(test.expectation)) {
       passed_tests++;
     } 
   }
