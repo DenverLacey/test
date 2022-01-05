@@ -7,6 +7,7 @@
 #include <sstream>
 #include <stdarg.h>
 #include <typeinfo>
+#include <vector>
 
 #define REGISTER_TESTS static constexpr std::initializer_list<Test> __tests__ = 
 #define REGISTER_TEST(test) { SHOULD_PASS, test, #test, __FILE__, __LINE__ }
@@ -252,50 +253,66 @@ struct Test {
   int line;
 };
 
+struct Evaluation {
+  size_t num_tests;
+  std::vector<const Test*> failed_tests;
+
+  void report() {
+    if (failed_tests.empty()) {
+      std::cout << color::GREEN << num_tests << "/" << num_tests << " tests passed!" << color::RESET << std::endl;
+      return;
+    }
+
+    std::cout << color::RED << failed_tests.size() << "/" << num_tests << " tests failed!" << color::RESET << std::endl;
+
+    for (const Test* test : failed_tests) {
+      std::cout << color::RED << "---> " << color::RESET << test->file << ':' << test->line << ": " << test->name << '.' << std::endl;
+    }
+  }
+};
+
 template<typename T>
-int run_fixture_for() {
+void run_fixture_for(Evaluation& evaluation) {
   const std::type_info& info = typeid(T);
 
   int demangle_status;
   const char *name = abi::__cxa_demangle(info.name(), NULL, NULL, &demangle_status);
   if (name == nullptr || demangle_status != 0) {
-    return 0;
+    return;
   } else {
     std::cout << color::CYAN << "Running " << name << "'s tests" << color::RESET << ':' << std::endl;
     free((void *)name);
   }
 
   auto tests = Fixture<T>::__tests__;
-  size_t passed_tests = 0;
   Tester tester;
-  for (auto&& test : tests) {
+  for (const Test& test : tests) {
     tester.reset();
 
     test.fn(tester);
     tester.report(test.name, test.file, test.line);
 
-    if (tester.meets_expectation(test.expectation)) {
-      passed_tests++;
+    if (!tester.meets_expectation(test.expectation)) {
+      evaluation.failed_tests.push_back(&test);
     } 
   }
 
   std::cout << std::endl;
-
-  return passed_tests;
 }
 
 template<typename T, typename... Ts>
 void run_tests() {
   std::cout << std::endl;
 
-  size_t num_tests = Fixture<T>::__tests__.size();
-  size_t passed_tests = run_fixture_for<T>();
+  Evaluation evaluation;
 
-  num_tests += (Fixture<Ts>::__tests__.size() + ... + 0);
-  passed_tests += (run_fixture_for<Ts>() + ... + 0);
+  evaluation.num_tests = Fixture<T>::__tests__.size();
+  run_fixture_for<T>(evaluation);
 
-  auto color = passed_tests == num_tests ? color::GREEN : color::RED;
-  std::cout << color << passed_tests << '/' << num_tests << " tests passed!" << color::RESET << std::endl << std::endl;
+  evaluation.num_tests += (Fixture<Ts>::__tests__.size() + ... + 0);
+  (run_fixture_for<Ts...>(evaluation));
+
+  evaluation.report();
 }
 
 } // namespace test

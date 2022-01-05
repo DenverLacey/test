@@ -51,14 +51,14 @@ namespace test {
 
 template<>
 struct Fixture<Timer> {
-  static void default_ctor(test::Tester& tester) {
+  static void default_ctor(Tester& tester) {
     auto t = Timer {};
     tester.is_eq(t._seconds, 0);
     tester.is_eq(t._minutes, 0);
     tester.is_eq(t._hours, 0);
   }
 
-  static void tick(test::Tester& tester) {
+  static void tick(Tester& tester) {
     auto t = Timer {};
     t._seconds = 59;
     t._minutes = 59;
@@ -70,7 +70,7 @@ struct Fixture<Timer> {
     tester.is_eq(t._hours, 1);
   }
 
-  static void reset(test::Tester& tester) {
+  static void reset(Tester& tester) {
     auto t = Timer {};
     t.tick();
     t.reset();
@@ -80,7 +80,7 @@ struct Fixture<Timer> {
     tester.is_eq(t._hours, 0);
   }
 
-  static void seconds(test::Tester& tester) {
+  static void seconds(Tester& tester) {
     auto t = Timer {};
     t._seconds = 11;
     int seconds = t.seconds();
@@ -88,7 +88,7 @@ struct Fixture<Timer> {
     tester.is_eq(seconds, t._seconds);
   }
 
-  static void minutes(test::Tester& tester) {
+  static void minutes(Tester& tester) {
     auto t = Timer {};
     t._minutes = 14;
     int minutes = t.minutes();
@@ -96,7 +96,7 @@ struct Fixture<Timer> {
     tester.is_eq(minutes, t._minutes);
   }
 
-  static void hours(test::Tester& tester) {
+  static void hours(Tester& tester) {
     auto t = Timer {};
     t._hours = 19;
     int hours = t.hours();
@@ -116,117 +116,117 @@ struct Fixture<Timer> {
 
 template<>
 struct Fixture<Tester> {
-  static void is_true_with_true(test::Tester& tester) {
+  static void is_true_with_true(Tester& tester) {
     tester.is_true(true);
   }
 
-  static void is_true_with_false(test::Tester& tester) {
+  static void is_true_with_false(Tester& tester) {
     tester.is_true(false);
   }
 
-  static void is_false_with_true(test::Tester& tester) {
+  static void is_false_with_true(Tester& tester) {
     tester.is_false(true);
   }
 
-  static void is_false_with_false(test::Tester& tester) {
+  static void is_false_with_false(Tester& tester) {
     tester.is_false(false);
   }
 
-  static void fail(test::Tester& tester) {
+  static void fail(Tester& tester) {
     tester.fail();
   }
 
-  static void fail_with_message(test::Tester& tester) {
+  static void fail_with_message(Tester& tester) {
     tester.fail("The variable is %d.", 42);
   }
 
-  static void inconclusive(test::Tester& tester) {
+  static void inconclusive(Tester& tester) {
     tester.inconclusive();
   }
 
-  static void inconclusive_with_message(test::Tester& tester) {
-    tester.inconclusive("Is the variable %d?", 42);
+  static void inconclusive_with_message(Tester& tester) {
+    tester.inconclusive("*Is* the variable %d?", 42);
   }
 
-  static void is_null_with_null(test::Tester& tester) {
+  static void is_null_with_null(Tester& tester) {
     tester.is_null(nullptr);
   }
 
-  static void is_null_with_ptr(test::Tester& tester) {
+  static void is_null_with_ptr(Tester& tester) {
     int d = 5;
     tester.is_null(&d);
   }
 
-  static void not_null_with_null(test::Tester& tester) {
+  static void not_null_with_null(Tester& tester) {
     tester.not_null(nullptr);
   }
 
-  static void not_null_with_ptr(test::Tester& tester) {
+  static void not_null_with_ptr(Tester& tester) {
     int d = 5;
     tester.not_null(&d);
   }
 
-  static void is_eq_with_eq(test::Tester& tester) {
+  static void is_eq_with_eq(Tester& tester) {
     tester.is_eq(0, 0);
   }
 
-  static void is_eq_with_ne(test::Tester& tester) {
+  static void is_eq_with_ne(Tester& tester) {
     tester.is_eq(0, 1);
   }
 
-  static void is_ne_with_eq(test::Tester& tester) {
+  static void is_ne_with_eq(Tester& tester) {
     tester.is_ne(0, 0);
   }
 
-  static void is_ne_with_ne(test::Tester& tester) {
+  static void is_ne_with_ne(Tester& tester) {
     tester.is_ne(0, 1);
   }
 
-  static void is_lt_with_0_1(test::Tester& tester) {
+  static void is_lt_with_0_1(Tester& tester) {
     tester.is_lt(0, 1);
   }
 
-  static void is_lt_with_1_1(test::Tester& tester) {
+  static void is_lt_with_1_1(Tester& tester) {
     tester.is_lt(1, 1);
   }
 
-  static void is_lt_with_1_0(test::Tester& tester) {
+  static void is_lt_with_1_0(Tester& tester) {
     tester.is_lt(1, 0);
   }
 
-  static void is_le_with_0_1(test::Tester& tester) {
+  static void is_le_with_0_1(Tester& tester) {
     tester.is_le(0, 1);
   }
 
-  static void is_le_with_1_1(test::Tester& tester) {
+  static void is_le_with_1_1(Tester& tester) {
     tester.is_le(1, 1);
   }
 
-  static void is_le_with_1_0(test::Tester& tester) {
+  static void is_le_with_1_0(Tester& tester) {
     tester.is_le(1, 0);
   }
 
-  static void is_gt_with_0_1(test::Tester& tester) {
+  static void is_gt_with_0_1(Tester& tester) {
     tester.is_gt(0, 1);
   }
 
-  static void is_gt_with_1_1(test::Tester& tester) {
+  static void is_gt_with_1_1(Tester& tester) {
     tester.is_gt(1, 1);
   }
 
-  static void is_gt_with_1_0(test::Tester& tester) {
+  static void is_gt_with_1_0(Tester& tester) {
     tester.is_gt(1, 0);
   }
 
-  static void is_ge_with_0_1(test::Tester& tester) {
+  static void is_ge_with_0_1(Tester& tester) {
     tester.is_ge(0, 1);
   }
 
-  static void is_ge_with_1_1(test::Tester& tester) {
+  static void is_ge_with_1_1(Tester& tester) {
     tester.is_ge(1, 1);
   }
 
-  static void is_ge_with_1_0(test::Tester& tester) {
+  static void is_ge_with_1_0(Tester& tester) {
     tester.is_ge(1, 0);
   }
 
