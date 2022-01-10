@@ -262,9 +262,21 @@ struct Fixture<Tester> {
   };
 };
 
+template<>
+struct Fixture<int> {
+	static void hello_from_Fixture_int(Tester& tester) {
+		tester.is_true(true);
+	}
+
+	REGISTER_TESTS {
+		REGISTER_TEST(hello_from_Fixture_int),
+	};
+};
+
 } // namespace test
 
 int main(int argc, const char **argv) {
-  test::run_tests<Timer, test::Tester>();
+  test::run_tests_for<Timer, test::Tester>();
+	test::run_fixtures<test::Fixture<int>>();
   return 0;
 }

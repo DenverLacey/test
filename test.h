@@ -194,7 +194,7 @@ public:
     free(message);
   }
 
-  bool meets_expectation(Expectation e) {
+  bool status_meets_expectation(Expectation e) {
     switch (e) {
       case SHOULD_PASS: return _status == PASSED;
       case SHOULD_FAIL: return _status == FAILED;
@@ -272,19 +272,42 @@ struct Evaluation {
 };
 
 template<typename T>
-void run_fixture_for(Evaluation& evaluation) {
-  const std::type_info& info = typeid(T);
+struct __report_beginning_of_fixture_evaluation__ {
+	static void call() {
+		const std::type_info& info = typeid(T);
 
-  int demangle_status;
-  const char *name = abi::__cxa_demangle(info.name(), NULL, NULL, &demangle_status);
-  if (name == nullptr || demangle_status != 0) {
-    return;
-  } else {
-    std::cout << color::CYAN << "Running " << name << "'s tests" << color::RESET << ':' << std::endl;
-    free((void *)name);
-  }
+		int demangle_status;
+  	const char *name = abi::__cxa_demangle(info.name(), NULL, NULL, &demangle_status);
+  	if (name == nullptr || demangle_status != 0) {
+  	  return;
+  	} else {
+  	  std::cout << color::CYAN << "Running " << name << "'s tests" << color::RESET << ':' << std::endl;
+  	  free((void *)name);
+  	}
+	}
+};
 
-  auto tests = Fixture<T>::__tests__;
+template<typename T>
+struct __report_beginning_of_fixture_evaluation__<Fixture<T>> {
+	static void call() {
+		const std::type_info& info = typeid(T);
+
+		int demangle_status;
+	  const char *name = abi::__cxa_demangle(info.name(), NULL, NULL, &demangle_status);
+	  if (name == nullptr || demangle_status != 0) {
+	    return;
+	  } else {
+	    std::cout << color::CYAN << "Running " << name << "'s tests" << color::RESET << ':' << std::endl;
+	    free((void *)name);
+	  }
+	}
+};
+
+template<typename F>
+void __run_fixtures__(Evaluation& evaluation) {
+	__report_beginning_of_fixture_evaluation__<F>::call();
+
+	auto tests = F::__tests__;
   Tester tester;
   for (const Test& test : tests) {
     tester.reset();
@@ -292,7 +315,7 @@ void run_fixture_for(Evaluation& evaluation) {
     test.fn(tester);
     tester.report(test.name, test.file, test.line);
 
-    if (!tester.meets_expectation(test.expectation)) {
+    if (!tester.status_meets_expectation(test.expectation)) {
       evaluation.failed_tests.push_back(&test);
     } 
   }
@@ -300,19 +323,25 @@ void run_fixture_for(Evaluation& evaluation) {
   std::cout << std::endl;
 }
 
-template<typename T, typename... Ts>
-void run_tests() {
-  std::cout << std::endl;
+template<typename F, typename... Fs>
+void run_fixtures() {
+	std::cout << std::endl;
 
   Evaluation evaluation;
+  evaluation.num_tests = F::__tests__.size() + (Fs::__tests__.size() + ... + 0);
+	
+	__run_fixtures__<F>(evaluation);
 
-  evaluation.num_tests = Fixture<T>::__tests__.size();
-  run_fixture_for<T>(evaluation);
-
-  evaluation.num_tests += (Fixture<Ts>::__tests__.size() + ... + 0);
-  (run_fixture_for<Ts...>(evaluation));
+	if constexpr (sizeof...(Fs) != 0) {
+		__run_fixtures__<Fs...>(evaluation);
+	}
 
   evaluation.report();
+}
+
+template<typename T, typename... Ts>
+void run_tests_for() {
+  run_fixtures<Fixture<T>, Fixture<Ts>...>();
 }
 
 } // namespace test
