@@ -194,6 +194,30 @@ public:
     free(message);
   }
 
+	void print(const char *fmt, ...) {
+		va_list args;
+		va_start(args, fmt);
+		print(fmt, args);
+	}
+
+	void print(const char *fmt, va_list args) {
+		char *message;
+		vasprintf(&message, fmt, args);
+		_report << '\t' << message;
+		va_end(args);
+	}
+
+	void println(const char *fmt, ...) {
+		va_list args;
+		va_start(args, fmt);
+		println(fmt, args);
+	}
+
+	void println(const char *fmt, va_list args) {
+		print(fmt, args);
+		_report << '\n';
+	}
+
   bool status_meets_expectation(Expectation e) {
     switch (e) {
       case SHOULD_PASS: return _status == PASSED;
