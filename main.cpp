@@ -4,279 +4,229 @@
 
 class Timer {
 public:
-  Timer() = default;
-  Timer(const Timer&) = default;
-  Timer(Timer&&) = default;
+    Timer() = default;
+    Timer(const Timer&) = default;
+    Timer(Timer&&) = default;
 
 public:
-  void reset() {
-    _seconds = 0;
-    _minutes = 0;
-    _hours = 0;
-  }
-
-  void tick() {
-    _seconds++;
-    if (_seconds >= 60) {
-      _seconds = 0;
-      _minutes++;
-      if (_minutes >= 60) {
+    void reset() {
+        _seconds = 0;
         _minutes = 0;
-        _hours++;
-      }
+        _hours = 0;
     }
-  }
 
-  int seconds() const {
-    return _seconds;
-  }
+    void tick() {
+        _seconds++;
+        if (_seconds >= 60) {
+            _seconds = 0;
+            _minutes++;
+            if (_minutes >= 60) {
+                _minutes = 0;
+                _hours++;
+            }
+        }
+    }
 
-  int minutes() const {
-    return _minutes;
-  }
+    int seconds() const {
+        return _seconds;
+    }
 
-  int hours() const {
-    return _hours;
-  }
+    int minutes() const {
+        return _minutes;
+    }
+
+    int hours() const {
+        return _hours;
+    }
 
 private:
-  int _seconds;
-  int _minutes;
-  int _hours;
+    int _seconds;
+    int _minutes;
+    int _hours;
 
-  friend class test::Fixture<Timer>;
+    friend class test::Fixture<Timer>;
 };
 
 namespace test {
 
-template<>
-struct Fixture<Timer> {
-  static void default_ctor(Tester& tester) {
-    auto t = Timer {};
-    tester.is_eq(t._seconds, 0);
-    tester.is_eq(t._minutes, 0);
-    tester.is_eq(t._hours, 0);
-  }
+FIXTURE(Timer) {
+    TESTS {
+        TEST("default constructor", [](Tester& tester) {
+            auto t = Timer {};
+            tester.is_eq(t._seconds, 0);
+            tester.is_eq(t._minutes, 0);
+            tester.is_eq(t._hours, 0);
+        }),
 
-  static void tick(Tester& tester) {
-    auto t = Timer {};
-    t._seconds = 59;
-    t._minutes = 59;
+        TEST("tick", [](Tester& tester) {
+            auto t = Timer {};
+            t._seconds = 59;
+            t._minutes = 59;
 
-    t.tick();
+            t.tick();
 
-    tester.is_eq(t._seconds, 0);
-    tester.is_eq(t._minutes, 0);
-    tester.is_eq(t._hours, 1);
-  }
+            tester.is_eq(t._seconds, 0);
+            tester.is_eq(t._minutes, 0);
+            tester.is_eq(t._hours, 1);
+        }),
 
-  static void reset(Tester& tester) {
-    auto t = Timer {};
-    t.tick();
-    t.reset();
+        TEST("reset", [](Tester& tester) {
+            auto t = Timer {};
+            t.tick();
+            t.reset();
 
-    tester.is_eq(t._seconds, 0);
-    tester.is_eq(t._minutes, 0);
-    tester.is_eq(t._hours, 0);
-  }
+            tester.is_eq(t._seconds, 0);
+            tester.is_eq(t._minutes, 0);
+            tester.is_eq(t._hours, 0);
+        }),
 
-  static void seconds(Tester& tester) {
-    auto t = Timer {};
-    t._seconds = 11;
-    int seconds = t.seconds();
+        TEST("seconds", [](Tester& tester) {
+            auto t = Timer {};
+            t._seconds = 11;
+            int seconds = t.seconds();
 
-    tester.is_eq(seconds, t._seconds);
-  }
+            tester.is_eq(seconds, t._seconds);
+        }),
 
-  static void minutes(Tester& tester) {
-    auto t = Timer {};
-    t._minutes = 14;
-    int minutes = t.minutes();
+        TEST("minutes", [](Tester& tester) {
+            auto t = Timer {};
+            t._minutes = 14;
+            int minutes = t.minutes();
 
-    tester.is_eq(minutes, t._minutes);
-  }
+            tester.is_eq(minutes, t._minutes);
+        }),
 
-  static void hours(Tester& tester) {
-    auto t = Timer {};
-    t._hours = 19;
-    int hours = t.hours();
+        TEST("hours", [](Tester& tester) {
+            auto t = Timer {};
+            t._hours = 19;
+            int hours = t.hours();
 
-    tester.is_eq(hours, t._hours);
-  }
-
-  REGISTER_TESTS {
-    REGISTER_TEST(default_ctor),
-    REGISTER_TEST(tick),
-    REGISTER_TEST(reset),
-    REGISTER_TEST(seconds),
-    REGISTER_TEST(minutes),
-    REGISTER_TEST(hours)
-  };
+            tester.is_eq(hours, t._hours);
+        })
+    };
 };
 
-template<>
-struct Fixture<Tester> {
-  static void is_true_with_true(Tester& tester) {
-    tester.is_true(true);
-  }
+FIXTURE(Tester) {
+    TESTS {
+        TEST("is_true with true", [](Tester& tester) {
+            tester.is_true(true);
+        }),
 
-  static void is_true_with_false(Tester& tester) {
-    tester.is_true(false);
-  }
+        TEST_EXPECT("is_true with false", SHOULD_FAIL, [](Tester& tester) {
+            tester.is_true(false);
+        }),
 
-  static void is_false_with_true(Tester& tester) {
-    tester.is_false(true);
-  }
+        TEST_EXPECT("is_false with true", SHOULD_FAIL, [](Tester& tester) {
+            tester.is_false(true);
+        }),
 
-  static void is_false_with_false(Tester& tester) {
-    tester.is_false(false);
-  }
+        TEST("is_false with false", [](Tester& tester) {
+            tester.is_false(false);
+        }),
 
-  static void fail(Tester& tester) {
-    tester.fail();
-  }
+        TEST_EXPECT("fail", SHOULD_FAIL, [](Tester& tester) {
+            tester.fail();
+        }),
 
-  static void fail_with_message(Tester& tester) {
-    tester.fail("The variable is %d.", 42);
-  }
+        TEST_EXPECT("fail with message", SHOULD_FAIL, [](Tester& tester) {
+            tester.fail("The variable is %d.", 42);
+        }),
 
-  static void inconclusive(Tester& tester) {
-    tester.inconclusive();
-  }
+        TEST_EXPECT("inconclusive", SHOULD_BE_INCONCLUSIVE, [](Tester& tester) {
+            tester.inconclusive();
+        }),
 
-  static void inconclusive_with_message(Tester& tester) {
-    tester.inconclusive("*Is* the variable %d?", 42);
-  }
+        TEST_EXPECT("inconclusive with message", SHOULD_BE_INCONCLUSIVE, [](Tester& tester) {
+            tester.inconclusive("*Is* the variable %d?", 42);
+        }),
 
-  static void is_null_with_null(Tester& tester) {
-    tester.is_null(nullptr);
-  }
+        TEST("is_null with null", [](Tester& tester) {
+            tester.is_null(nullptr);
+        }),
 
-  static void is_null_with_ptr(Tester& tester) {
-    int d = 5;
-    tester.is_null(&d);
-  }
+        TEST_EXPECT("is_null with ptr", SHOULD_FAIL, [](Tester& tester) {
+            int d = 5;
+            tester.is_null(&d);
+        }),
 
-  static void not_null_with_null(Tester& tester) {
-    tester.not_null(nullptr);
-  }
+        TEST_EXPECT("not_null with null", SHOULD_FAIL, [](Tester& tester) {
+            tester.not_null(nullptr);
+        }),
 
-  static void not_null_with_ptr(Tester& tester) {
-    int d = 5;
-    tester.not_null(&d);
-  }
+        TEST("not_null with ptr", [](Tester& tester) {
+            int d = 5;
+            tester.not_null(&d);
+        }),
 
-  static void is_eq_with_eq(Tester& tester) {
-    tester.is_eq(0, 0);
-  }
+        TEST("is_eq with eq", [](Tester& tester) {
+            tester.is_eq(0, 0);
+        }),
 
-  static void is_eq_with_ne(Tester& tester) {
-    tester.is_eq(0, 1);
-  }
+        TEST_EXPECT("is_eq with ne", SHOULD_FAIL, [](Tester& tester) {
+            tester.is_eq(0, 1);
+        }),
 
-  static void is_ne_with_eq(Tester& tester) {
-    tester.is_ne(0, 0);
-  }
+        TEST_EXPECT("is_ne with eq", SHOULD_FAIL, [](Tester& tester) {
+            tester.is_ne(0, 0);
+        }),
 
-  static void is_ne_with_ne(Tester& tester) {
-    tester.is_ne(0, 1);
-  }
+        TEST("is_ne with ne", [](Tester& tester) {
+            tester.is_ne(0, 1);
+        }),
 
-  static void is_lt_with_0_1(Tester& tester) {
-    tester.is_lt(0, 1);
-  }
+        TEST("is_lt with (0, 1)", [](Tester& tester) {
+            tester.is_lt(0, 1);
+        }),
 
-  static void is_lt_with_1_1(Tester& tester) {
-    tester.is_lt(1, 1);
-  }
+        TEST_EXPECT("is_lt with (1, 1)", SHOULD_FAIL, [](Tester& tester) {
+            tester.is_lt(1, 1);
+        }),
 
-  static void is_lt_with_1_0(Tester& tester) {
-    tester.is_lt(1, 0);
-  }
+        TEST_EXPECT("is_lt with (1, 0)", SHOULD_FAIL, [](Tester& tester) {
+            tester.is_lt(1, 0);
+        }),
 
-  static void is_le_with_0_1(Tester& tester) {
-    tester.is_le(0, 1);
-  }
+        TEST("is_le with (0, 1)", [](Tester& tester) {
+            tester.is_le(0, 1);
+        }),
 
-  static void is_le_with_1_1(Tester& tester) {
-    tester.is_le(1, 1);
-  }
+        TEST("is_le with (1, 1)", [](Tester& tester) {
+            tester.is_le(1, 1);
+        }),
 
-  static void is_le_with_1_0(Tester& tester) {
-    tester.is_le(1, 0);
-  }
+        TEST_EXPECT("is_le with (1, 0)", SHOULD_FAIL, [](Tester& tester) {
+            tester.is_le(1, 0);
+        }),
 
-  static void is_gt_with_0_1(Tester& tester) {
-    tester.is_gt(0, 1);
-  }
+        TEST_EXPECT("is_gt with (0, 1)", SHOULD_FAIL, [](Tester& tester) {
+            tester.is_gt(0, 1);
+        }),
 
-  static void is_gt_with_1_1(Tester& tester) {
-    tester.is_gt(1, 1);
-  }
+        TEST_EXPECT("is_gt with (1, 1)", SHOULD_FAIL, [](Tester& tester) {
+            tester.is_gt(1, 1);
+        }),
 
-  static void is_gt_with_1_0(Tester& tester) {
-    tester.is_gt(1, 0);
-  }
+        TEST("is_gt with (1, 0)", [](Tester& tester) {
+            tester.is_gt(1, 0);
+        }),
 
-  static void is_ge_with_0_1(Tester& tester) {
-    tester.is_ge(0, 1);
-  }
+        TEST_EXPECT("is_ge with (0, 1)", SHOULD_FAIL, [](Tester& tester) {
+            tester.is_ge(0, 1);
+        }),
 
-  static void is_ge_with_1_1(Tester& tester) {
-    tester.is_ge(1, 1);
-  }
+        TEST("is_ge with (1, 1)", [](Tester& tester) {
+            tester.is_ge(1, 1);
+        }),
 
-  static void is_ge_with_1_0(Tester& tester) {
-    tester.is_ge(1, 0);
-  }
-
-  REGISTER_TESTS {
-    REGISTER_TEST_EXPECT(test::SHOULD_PASS, is_true_with_true),
-    REGISTER_TEST_EXPECT(test::SHOULD_FAIL, is_true_with_false),
-    REGISTER_TEST_EXPECT(test::SHOULD_FAIL, is_false_with_true),
-    REGISTER_TEST_EXPECT(test::SHOULD_PASS, is_false_with_false),
-    REGISTER_TEST_EXPECT(test::SHOULD_PASS, is_null_with_null),
-    REGISTER_TEST_EXPECT(test::SHOULD_FAIL, is_null_with_ptr),
-    REGISTER_TEST_EXPECT(test::SHOULD_FAIL, not_null_with_null),
-    REGISTER_TEST_EXPECT(test::SHOULD_PASS, not_null_with_ptr),
-    REGISTER_TEST_EXPECT(test::SHOULD_PASS, is_eq_with_eq),
-    REGISTER_TEST_EXPECT(test::SHOULD_FAIL, is_eq_with_ne),
-    REGISTER_TEST_EXPECT(test::SHOULD_FAIL, is_ne_with_eq),
-    REGISTER_TEST_EXPECT(test::SHOULD_PASS, is_ne_with_ne),
-    REGISTER_TEST_EXPECT(test::SHOULD_PASS, is_lt_with_0_1),
-    REGISTER_TEST_EXPECT(test::SHOULD_FAIL, is_lt_with_1_1),
-    REGISTER_TEST_EXPECT(test::SHOULD_FAIL, is_lt_with_1_0),
-    REGISTER_TEST_EXPECT(test::SHOULD_PASS, is_le_with_0_1),
-    REGISTER_TEST_EXPECT(test::SHOULD_PASS, is_le_with_1_1),
-    REGISTER_TEST_EXPECT(test::SHOULD_FAIL, is_le_with_1_0),
-    REGISTER_TEST_EXPECT(test::SHOULD_FAIL, is_gt_with_0_1),
-    REGISTER_TEST_EXPECT(test::SHOULD_FAIL, is_gt_with_1_1),
-    REGISTER_TEST_EXPECT(test::SHOULD_PASS, is_gt_with_1_0),
-    REGISTER_TEST_EXPECT(test::SHOULD_FAIL, is_ge_with_0_1),
-    REGISTER_TEST_EXPECT(test::SHOULD_PASS, is_ge_with_1_1),
-    REGISTER_TEST_EXPECT(test::SHOULD_PASS, is_ge_with_1_0),
-    REGISTER_TEST_EXPECT(test::SHOULD_FAIL, fail),
-    REGISTER_TEST_EXPECT(test::SHOULD_FAIL, fail_with_message),
-    REGISTER_TEST_EXPECT(test::SHOULD_BE_INCONCLUSIVE, inconclusive),
-    REGISTER_TEST_EXPECT(test::SHOULD_BE_INCONCLUSIVE, inconclusive_with_message),
-  };
-};
-
-template<>
-struct Fixture<int> {
-	static void hello_from_Fixture_int(Tester& tester) {
-		tester.is_true(true);
-	}
-
-	REGISTER_TESTS {
-		REGISTER_TEST(hello_from_Fixture_int),
-	};
+        TEST("is_ge with (1, 0)", [](Tester& tester) {
+            tester.is_ge(1, 0);
+        }),
+    };
 };
 
 } // namespace test
 
 int main(int argc, const char **argv) {
-  test::run_tests_for<Timer, test::Tester>();
-	test::run_fixtures<test::Fixture<int>>();
-  return 0;
+    test::run_tests_for<Timer, test::Tester>();
+    return 0;
 }
